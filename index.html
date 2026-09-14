@@ -63,13 +63,616 @@
 
     </section>
 
+
+    <!-- =====================================================
+         TELA 02 — TERMOS E PRIVACIDADE
+         ===================================================== -->
+
+    <section
+      id="screen-terms"
+      class="screen screen-terms"
+      hidden
+      aria-hidden="true"
+    >
+
+      <div class="terms-layout">
+
+        <header class="screen-header">
+
+          <div
+            class="hm-mark hm-mark-3d"
+            aria-label="HM"
+          >
+            <span class="hm-letter hm-h">H</span>
+            <span class="hm-letter hm-m">M</span>
+            <span class="hm-core"></span>
+          </div>
+
+          <div class="screen-heading">
+
+            <h1>
+              Termos e Condições
+            </h1>
+
+            <p>
+              Termos de utilização e política de privacidade.
+            </p>
+
+          </div>
+
+        </header>
+
+
+        <div
+          class="terms-scroll"
+          tabindex="0"
+          aria-label="Termos e Política de Privacidade"
+        >
+
+          <article class="legal-section">
+
+            <h2>
+              Termos e Condições
+            </h2>
+
+            <p>
+              Conteúdo dos Termos e Condições será inserido
+              nesta área.
+            </p>
+
+            <p>
+              Esta área foi estruturada para receber o texto
+              legal definitivo do Homem e a Máquina.
+            </p>
+
+          </article>
+
+
+          <article class="legal-section">
+
+            <h2>
+              Política de Privacidade
+            </h2>
+
+            <p>
+              Conteúdo da Política de Privacidade será inserido
+              nesta área.
+            </p>
+
+            <p>
+              Esta área foi estruturada para receber o texto
+              legal definitivo do Homem e a Máquina.
+            </p>
+
+          </article>
+
+        </div>
+
+
+        <div class="terms-actions">
+
+          <label class="checkbox-row">
+
+            <input
+              type="checkbox"
+              id="terms-accept"
+            >
+
+            <span class="custom-checkbox"></span>
+
+            <span class="checkbox-label">
+              Li e aceito os Termos e Condições e a Política de
+              Privacidade.
+            </span>
+
+          </label>
+
+
+          <button
+            type="button"
+            id="terms-continue"
+            class="primary-button"
+            disabled
+          >
+            Continuar
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA 03 — LOGIN
+         ===================================================== -->
+
+    <section
+      id="screen-login"
+      class="screen screen-auth"
+      hidden
+      aria-hidden="true"
+    >
+
+      <div class="auth-container">
+
+        <header class="auth-header">
+
+          <div
+            class="hm-mark hm-mark-3d"
+            aria-label="HM"
+          >
+            <span class="hm-letter hm-h">H</span>
+            <span class="hm-letter hm-m">M</span>
+            <span class="hm-core"></span>
+          </div>
+
+          <h1>
+            Entrar
+          </h1>
+
+        </header>
+
+
+        <form
+          id="login-form"
+          novalidate
+        >
+
+          <div class="field-group">
+
+            <label for="login-email">
+              E-mail
+            </label>
+
+            <input
+              type="email"
+              id="login-email"
+              name="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="nome@exemplo.com"
+              required
+            >
+
+            <p
+              id="login-email-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+
+          <div class="field-group">
+
+            <label for="login-password">
+              Palavra-passe
+            </label>
+
+            <div class="password-field">
+
+              <input
+                type="password"
+                id="login-password"
+                name="password"
+                autocomplete="current-password"
+                placeholder="Palavra-passe"
+                required
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-target="login-password"
+                aria-label="Mostrar palavra-passe"
+                aria-pressed="false"
+              >
+                <span
+                  class="password-icon"
+                  aria-hidden="true"
+                ></span>
+              </button>
+
+            </div>
+
+            <p
+              id="login-password-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+
+          <button
+            type="button"
+            id="forgot-password-link"
+            class="text-button"
+          >
+            Esqueceste a palavra-passe?
+          </button>
+
+
+          <p
+            id="login-message"
+            class="form-message"
+            aria-live="polite"
+          ></p>
+
+
+          <button
+            type="submit"
+            id="login-submit"
+            class="primary-button"
+            disabled
+          >
+            Entrar
+          </button>
+
+        </form>
+
+
+        <div class="auth-switch">
+
+          <span>
+            Não tens uma conta?
+          </span>
+
+          <button
+            type="button"
+            id="go-register"
+            class="text-button"
+          >
+            Criar conta
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA 04 — RECUPERAR ACESSO
+         ===================================================== -->
+
+    <section
+      id="screen-recovery"
+      class="screen screen-auth"
+      hidden
+      aria-hidden="true"
+    >
+
+      <div class="auth-container">
+
+        <header class="auth-header">
+
+          <div
+            class="hm-mark hm-mark-3d"
+            aria-label="HM"
+          >
+            <span class="hm-letter hm-h">H</span>
+            <span class="hm-letter hm-m">M</span>
+            <span class="hm-core"></span>
+          </div>
+
+          <h1>
+            Recuperar acesso
+          </h1>
+
+          <p>
+            Introduz o teu e-mail para recuperar o acesso.
+          </p>
+
+        </header>
+
+
+        <form
+          id="recovery-form"
+          novalidate
+        >
+
+          <div class="field-group">
+
+            <label for="recovery-email">
+              E-mail
+            </label>
+
+            <input
+              type="email"
+              id="recovery-email"
+              name="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="nome@exemplo.com"
+              required
+            >
+
+            <p
+              id="recovery-email-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+
+          <p
+            id="recovery-message"
+            class="form-message"
+            aria-live="polite"
+          ></p>
+
+
+          <button
+            type="submit"
+            id="recovery-submit"
+            class="primary-button"
+            disabled
+          >
+            Enviar
+          </button>
+
+
+          <button
+            type="button"
+            id="back-to-login"
+            class="secondary-button"
+          >
+            Voltar
+          </button>
+
+        </form>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA 05 — CRIAR CONTA
+         ===================================================== -->
+
+    <section
+      id="screen-register"
+      class="screen screen-auth"
+      hidden
+      aria-hidden="true"
+    >
+
+      <div class="auth-container">
+
+        <header class="auth-header">
+
+          <div
+            class="hm-mark hm-mark-3d"
+            aria-label="HM"
+          >
+            <span class="hm-letter hm-h">H</span>
+            <span class="hm-letter hm-m">M</span>
+            <span class="hm-core"></span>
+          </div>
+
+          <h1>
+            Criar conta
+          </h1>
+
+        </header>
+
+
+        <form
+          id="register-form"
+          novalidate
+        >
+
+          <div class="field-group">
+
+            <label for="register-name">
+              Nome
+            </label>
+
+            <input
+              type="text"
+              id="register-name"
+              name="name"
+              autocomplete="name"
+              placeholder="O teu nome"
+              required
+            >
+
+            <p
+              id="register-name-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+
+          <div class="field-group">
+
+            <label for="register-email">
+              E-mail
+            </label>
+
+            <input
+              type="email"
+              id="register-email"
+              name="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="nome@exemplo.com"
+              required
+            >
+
+            <p
+              id="register-email-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+
+          <div class="field-group">
+
+            <label for="register-password">
+              Palavra-passe
+            </label>
+
+            <div class="password-field">
+
+              <input
+                type="password"
+                id="register-password"
+                name="password"
+                autocomplete="new-password"
+                placeholder="Palavra-passe"
+                required
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-target="register-password"
+                aria-label="Mostrar palavra-passe"
+                aria-pressed="false"
+              >
+                <span
+                  class="password-icon"
+                  aria-hidden="true"
+                ></span>
+              </button>
+
+            </div>
+
+            <p
+              id="register-password-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+
+          <div class="field-group">
+
+            <label for="register-password-confirm">
+              Confirmar palavra-passe
+            </label>
+
+            <div class="password-field">
+
+              <input
+                type="password"
+                id="register-password-confirm"
+                name="passwordConfirm"
+                autocomplete="new-password"
+                placeholder="Confirmar palavra-passe"
+                required
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-target="register-password-confirm"
+                aria-label="Mostrar palavra-passe"
+                aria-pressed="false"
+              >
+                <span
+                  class="password-icon"
+                  aria-hidden="true"
+                ></span>
+              </button>
+
+            </div>
+
+            <p
+              id="register-password-confirm-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+
+          </div>
+
+
+          <p
+            id="register-message"
+            class="form-message"
+            aria-live="polite"
+          ></p>
+
+
+          <button
+            type="submit"
+            id="register-submit"
+            class="primary-button"
+            disabled
+          >
+            Criar conta
+          </button>
+
+        </form>
+
+
+        <div class="auth-switch">
+
+          <span>
+            Já tens uma conta?
+          </span>
+
+          <button
+            type="button"
+            id="go-login"
+            class="text-button"
+          >
+            Entrar
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TELA 06 — ENTRADA INTERNA
+         ===================================================== -->
+
+    <section
+      id="screen-internal-entry"
+      class="screen screen-internal-entry"
+      hidden
+      aria-hidden="true"
+    >
+
+      <div class="internal-entry-content">
+
+        <div
+          class="hm-mark hm-mark-3d"
+          aria-label="HM"
+        >
+          <span class="hm-letter hm-h">H</span>
+          <span class="hm-letter hm-m">M</span>
+          <span class="hm-core"></span>
+        </div>
+
+        <h1>
+          Homem e a Máquina
+        </h1>
+
+      </div>
+
+    </section>
+
   </main>
 
-  <script>
-    window.setTimeout(function () {
-      window.location.href = "terms.html";
-    }, 4000);
-  </script>
+
+  <script src="app.js"></script>
 
 </body>
-  </html>
+      </html>
