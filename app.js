@@ -1,2300 +1,718 @@
-/* ============================================================
-   HOMEM E A MÁQUINA
-   GRUPO 1 — EXTERNA + CONTA + CONFIGURAÇÃO
-   app.js
-   PARTE 1/4
-   ============================================================
+"use strict";
 
-   IMPORTANTE:
-   - Esta é a Parte 1 do MESMO app.js.
-   - As Partes 1, 2, 3 e 4 devem ser juntadas na ordem.
-   - Nesta fase o Firebase ainda NÃO está conectado.
-   - Nenhuma senha ou credencial é armazenada.
-   ============================================================ */
+/* =========================================================
+   HOMEM E A MÁQUINA — GRUPO 1 / OUVIU
+   APP.JS
+   Navegação + Splash + Validações + Estados básicos
+   ========================================================= */
 
-(() => {
-  "use strict";
 
-  /* ==========================================================
-     1. CONFIGURAÇÃO INICIAL
-     ========================================================== */
+/* =========================================================
+   1. REFERÊNCIAS DAS TELAS
+   ========================================================= */
 
-  const SPLASH_TIME = 4000;
+const screens = {
+  splash: document.getElementById("screen-splash"),
+  terms: document.getElementById("screen-terms"),
+  login: document.getElementById("screen-login"),
+  recovery: document.getElementById("screen-recovery"),
+  register: document.getElementById("screen-register"),
+  internal: document.getElementById("screen-internal-entry")
+};
 
-  const screens = Array.from(
-    document.querySelectorAll(".screen")
-  );
 
-  let currentScreenId = "splash";
+/* =========================================================
+   2. CONTROLO DE TELA
+   ========================================================= */
+
+function showScreen(screenName) {
+
+  const targetScreen = screens[screenName];
+
+  if (!targetScreen) {
+    console.error("Tela não encontrada:", screenName);
+    return;
+  }
+
+  Object.values(screens).forEach((screen) => {
+
+    if (!screen) return;
+
+    screen.hidden = true;
+    screen.setAttribute("aria-hidden", "true");
+
+  });
+
+
+  targetScreen.hidden = false;
+  targetScreen.setAttribute("aria-hidden", "false");
+
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "instant"
+  });
+}
+
+
+/* =========================================================
+   3. ESTADO INICIAL
+   ========================================================= */
+
+showScreen("splash");
+
+
+/* =========================================================
+   4. SPLASH
+   ========================================================= */
+
+const SPLASH_DURATION = 4000;
+
+function startSplash() {
+
+  window.setTimeout(() => {
+
+    /*
+     * Nesta fase ainda não existe Firebase.
+     *
+     * Por isso, depois da Splash entramos no fluxo
+     * externo começando pelos Termos.
+     *
+     * A verificação de sessão será acrescentada
+     * quando Firebase for integrado.
+     */
+
+    showScreen("terms");
+
+  }, SPLASH_DURATION);
+}
+
+startSplash();
+
+
+/* =========================================================
+   5. TERMOS E PRIVACIDADE
+   ========================================================= */
+
+const termsAccept = document.getElementById("terms-accept");
+const termsContinue = document.getElementById("terms-continue");
+
+
+if (termsAccept && termsContinue) {
+
+  termsAccept.addEventListener("change", () => {
+
+    termsContinue.disabled = !termsAccept.checked;
+
+  });
+
+
+  termsContinue.addEventListener("click", () => {
+
+    if (!termsAccept.checked) return;
+
+    showScreen("login");
+
+  });
+
+}
+
+
+/* =========================================================
+   6. LOGIN
+   ========================================================= */
+
+const loginForm = document.getElementById("login-form");
+const loginEmail = document.getElementById("login-email");
+const loginPassword = document.getElementById("login-password");
+const loginSubmit = document.getElementById("login-submit");
+
+const loginEmailError = document.getElementById("login-email-error");
+const loginPasswordError = document.getElementById("login-password-error");
+const loginMessage = document.getElementById("login-message");
+
+
+function validateEmail(email) {
+
+  const value = email.trim();
 
   /*
-   * Estado temporário apenas para funcionamento visual
-   * durante esta fase.
+   * Validação básica de estrutura.
    *
-   * NÃO representa autenticação real.
-   * NÃO substitui Firebase Authentication.
+   * Não obriga .com.
+   * Exemplos válidos:
+   * nome@gmail.com
+   * nome@empresa.co.mz
+   * pessoa@dominio.org
    */
-  const temporaryState = {
-    termsAccepted: false,
-    privacyAccepted: false,
-    currentUser: null,
 
-    settings: {
-      voice: null,
-      language: null,
-      conversation: null,
-      appearance: null
-    }
-  };
+  const emailPattern =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  /* ==========================================================
-     2. UTILITÁRIOS
-     ========================================================== */
+  return emailPattern.test(value);
+}
 
-  function getElement(selector) {
-    return document.querySelector(selector);
-  }
 
-  function getElements(selector) {
-    return Array.from(
-      document.querySelectorAll(selector)
-    );
-  }
+function validateLoginFields() {
 
-  function showElement(element) {
-    if (!element) return;
+  const emailValid = validateEmail(loginEmail.value);
 
-    element.hidden = false;
-  }
+  const passwordValid =
+    loginPassword.value.trim().length >= 1;
 
-  function hideElement(element) {
-    if (!element) return;
+  loginSubmit.disabled =
+    !(emailValid && passwordValid);
 
-    element.hidden = true;
-  }
+}
 
-  function setText(selector, text) {
-    const element = getElement(selector);
 
-    if (!element) return;
+function clearLoginErrors() {
 
-    element.textContent = text;
-  }
+  loginEmailError.textContent = "";
+  loginPasswordError.textContent = "";
+  loginMessage.textContent = "";
 
-  /* ==========================================================
-     3. ERROS DOS CAMPOS
-     ========================================================== */
+}
 
-  function clearInputError(input) {
-    if (!input) return;
 
-    input.classList.remove("is-error");
+if (loginEmail && loginPassword && loginSubmit) {
 
-    input.removeAttribute("aria-invalid");
+  loginEmail.addEventListener("input", () => {
 
-    const field = input.closest(".field-group");
+    clearLoginErrors();
+    validateLoginFields();
 
-    if (!field) return;
+  });
 
-    field.classList.remove("has-error");
 
-    const error = field.querySelector(
-      ".field-error"
-    );
+  loginPassword.addEventListener("input", () => {
 
-    if (error) {
-      error.textContent = "";
-    }
-  }
+    clearLoginErrors();
+    validateLoginFields();
 
-  function setInputError(input, message) {
-    if (!input) return;
+  });
 
-    input.classList.add("is-error");
+}
 
-    input.setAttribute(
-      "aria-invalid",
-      "true"
-    );
 
-    const field = input.closest(".field-group");
+if (loginForm) {
 
-    if (!field) return;
+  loginForm.addEventListener("submit", (event) => {
 
-    field.classList.add("has-error");
+    event.preventDefault();
 
-    const error = field.querySelector(
-      ".field-error"
-    );
+    clearLoginErrors();
 
-    if (error) {
-      error.textContent = message;
-    }
-  }
-
-  function clearAllInputErrors(form) {
-    if (!form) return;
-
-    const inputs = form.querySelectorAll("input");
-
-    inputs.forEach((input) => {
-      clearInputError(input);
-    });
-  }
-
-  /* ==========================================================
-     4. MENSAGENS DOS FORMULÁRIOS
-     ========================================================== */
-
-  function getFormMessage(form) {
-    if (!form) return null;
-
-    return form.querySelector(
-      ".form-message, .auth-error, .global-error, [data-form-message]"
-    );
-  }
-
-  function showFormMessage(
-    form,
-    message,
-    type = "error"
-  ) {
-    const messageElement = getFormMessage(form);
-
-    if (!messageElement) return;
-
-    messageElement.textContent = message;
-
-    messageElement.classList.remove(
-      "is-error",
-      "is-success",
-      "is-info"
-    );
-
-    messageElement.classList.add(
-      `is-${type}`
-    );
-
-    showElement(messageElement);
-  }
-
-  function clearFormMessage(form) {
-    const messageElement = getFormMessage(form);
-
-    if (!messageElement) return;
-
-    messageElement.textContent = "";
-
-    messageElement.classList.remove(
-      "is-error",
-      "is-success",
-      "is-info"
-    );
-
-    hideElement(messageElement);
-  }
-
-  /* ==========================================================
-     5. NAVEGAÇÃO ENTRE TELAS
-     ========================================================== */
-
-  function findScreen(screenId) {
-    if (!screenId) return null;
-
-    return document.getElementById(screenId);
-  }
-
-  function showScreen(
-    screenId,
-    options = {}
-  ) {
-    const target = findScreen(screenId);
-
-    if (!target) {
-      console.warn(
-        `[Grupo 1] Tela não encontrada: ${screenId}`
-      );
-
-      return false;
-    }
-
-    screens.forEach((screen) => {
-      screen.classList.remove("is-active");
-
-      screen.setAttribute(
-        "aria-hidden",
-        "true"
-      );
-    });
-
-    target.classList.add("is-active");
-
-    target.setAttribute(
-      "aria-hidden",
-      "false"
-    );
-
-    currentScreenId = screenId;
-
-    if (options.scrollTop !== false) {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: "auto"
-      });
-    }
-
-    return true;
-  }
-
-  function goTo(screenId) {
-    showScreen(screenId);
-  }
-
-  /* ==========================================================
-     6. SPLASH
-     ========================================================== */
-
-  function startSplash() {
-    const splash = findScreen("splash");
-
-    if (!splash) {
-      console.warn(
-        "[Grupo 1] Tela Splash não encontrada."
-      );
-
-      return;
-    }
-
-    showScreen("splash");
-
-    window.setTimeout(() => {
-      /*
-       * Nesta fase visual ainda não temos Firebase.
-       *
-       * Portanto, o fluxo inicial segue para
-       * apresentação.
-       *
-       * Quando o Firebase Authentication for conectado,
-       * esta decisão será substituída pela verificação
-       * real da sessão do utilizador.
-       */
-
-      if (temporaryState.currentUser) {
-        goTo("internal-home");
-      } else {
-        goTo("presentation");
-      }
-    }, SPLASH_TIME);
-  }
-
-  /* ==========================================================
-     7. TERMOS
-     ========================================================== */
-
-  function setupTerms() {
-    const checkbox = getElement(
-      "#terms-checkbox"
-    );
-
-    const continueButton = getElement(
-      "#terms-continue"
-    );
-
-    if (!checkbox || !continueButton) {
-      return;
-    }
-
-    continueButton.disabled =
-      !checkbox.checked;
-
-    checkbox.addEventListener(
-      "change",
-      () => {
-        temporaryState.termsAccepted =
-          checkbox.checked;
-
-        continueButton.disabled =
-          !checkbox.checked;
-      }
-    );
-  }
-
-  /* ==========================================================
-     8. PRIVACIDADE
-     ========================================================== */
-
-  function setupPrivacy() {
-    const checkbox = getElement(
-      "#privacy-checkbox"
-    );
-
-    const continueButton = getElement(
-      "#privacy-continue"
-    );
-
-    if (!checkbox || !continueButton) {
-      return;
-    }
-
-    continueButton.disabled =
-      !checkbox.checked;
-
-    checkbox.addEventListener(
-      "change",
-      () => {
-        temporaryState.privacyAccepted =
-          checkbox.checked;
-
-        continueButton.disabled =
-          !checkbox.checked;
-      }
-    );
-  }
-
-  /* ==========================================================
-     9. NAVEGAÇÃO DOS BOTÕES
-     ========================================================== */
-
-  function handleAction(
-    action,
-    element
-  ) {
-    if (!action) return;
-
-    switch (action) {
-
-      /* ------------------------------------------------------
-         APRESENTAÇÃO
-         ------------------------------------------------------ */
-
-      case "go-terms":
-        goTo("terms");
-        break;
-
-      /* ------------------------------------------------------
-         TERMOS
-         ------------------------------------------------------ */
-
-      case "go-privacy": {
-        const checkbox =
-          getElement("#terms-checkbox");
-
-        if (
-          !checkbox ||
-          !checkbox.checked
-        ) {
-          return;
-        }
-
-        temporaryState.termsAccepted =
-          true;
-
-        goTo("privacy");
-
-        break;
-      }
-
-      /* ------------------------------------------------------
-         PRIVACIDADE
-         ------------------------------------------------------ */
-
-      case "go-login": {
-        const checkbox =
-          getElement("#privacy-checkbox");
-
-        if (
-          !checkbox ||
-          !checkbox.checked
-        ) {
-          return;
-        }
-
-        temporaryState.privacyAccepted =
-          true;
-
-        goTo("login");
-
-        break;
-      }
-
-      /* ------------------------------------------------------
-         AUTENTICAÇÃO
-         ------------------------------------------------------ */
-
-      case "go-register":
-        goTo("register");
-        break;
-
-      case "go-reset":
-        goTo("reset-password");
-        break;
-
-      case "back-login":
-        goTo("login");
-        break;
-
-      /* ------------------------------------------------------
-         ÁREA INTERNA
-         ------------------------------------------------------ */
-
-      case "go-home":
-        goTo("internal-home");
-        break;
-
-      case "go-settings":
-        goTo("settings");
-        break;
-
-      case "go-account":
-        goTo("account");
-        break;
-
-      case "go-profile":
-        goTo("profile");
-        break;
-
-      /* ------------------------------------------------------
-         CONFIGURAÇÕES
-         ------------------------------------------------------ */
-
-      case "go-voice":
-        goTo("settings-voice");
-        break;
-
-      case "go-language":
-        goTo("settings-language");
-        break;
-
-      case "go-conversation":
-        goTo("settings-conversation");
-        break;
-
-      case "go-settings-privacy":
-        goTo("settings-privacy");
-        break;
-
-      case "go-appearance":
-        goTo("settings-appearance");
-        break;
-
-      /* ------------------------------------------------------
-         DOCUMENTO DE PRIVACIDADE
-         ------------------------------------------------------ */
-
-      case "go-privacy-document":
-        goTo("privacy-document");
-        break;
-
-      /* ------------------------------------------------------
-         LOGOUT
-         ------------------------------------------------------ */
-
-      case "logout":
-        handleTemporaryLogout();
-        break;
-
-      default:
-        console.warn(
-          `[Grupo 1] Ação não reconhecida: ${action}`
-        );
-    }
-  }
-
-  /* ==========================================================
-     10. EVENTOS DATA-ACTION
-     ========================================================== */
-
-  function setupActions() {
-    const actionElements =
-      getElements("[data-action]");
-
-    actionElements.forEach(
-      (element) => {
-        element.addEventListener(
-          "click",
-          (event) => {
-
-            /*
-             * Não bloquear checkbox, input ou
-             * elementos que tenham comportamento próprio.
-             */
-
-            if (
-              element.tagName === "INPUT" ||
-              element.tagName === "SELECT" ||
-              element.tagName === "TEXTAREA"
-            ) {
-              return;
-            }
-
-            event.preventDefault();
-
-            const action =
-              element.dataset.action;
-
-            handleAction(
-              action,
-              element
-            );
-          }
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     11. MOSTRAR / OCULTAR SENHA
-     ========================================================== */
-
-  function setupPasswordToggles() {
-    const buttons = getElements(
-      "[data-password-toggle], .password-toggle"
-    );
-
-    buttons.forEach(
-      (button) => {
-        button.addEventListener(
-          "click",
-          (event) => {
-            event.preventDefault();
-
-            const fieldGroup =
-              button.closest(
-                ".field-group"
-              );
-
-            if (!fieldGroup) return;
-
-            const input =
-              fieldGroup.querySelector(
-                'input[type="password"], input[type="text"]'
-              );
-
-            if (!input) return;
-
-            const showingPassword =
-              input.type === "text";
-
-            input.type =
-              showingPassword
-                ? "password"
-                : "text";
-
-            button.setAttribute(
-              "aria-pressed",
-              String(!showingPassword)
-            );
-
-            /*
-             * Caso o botão possua texto,
-             * alternamos de forma simples.
-             */
-
-            if (button.dataset.showText) {
-              button.textContent =
-                showingPassword
-                  ? button.dataset.showText
-                  : button.dataset.hideText ||
-                    "Ocultar";
-            }
-          }
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     12. VALIDAÇÃO DE EMAIL
-     ========================================================== */
-
-  function isValidEmail(email) {
-    if (!email) return false;
-
-    const value =
-      String(email).trim();
-
-    /*
-     * Verifica apenas o formato.
-     *
-     * Não verifica se o email realmente existe.
-     * Essa verificação será responsabilidade do
-     * Firebase Authentication.
-     */
-
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-      value
-    );
-  }
-
-  /* ==========================================================
-     13. VALIDAÇÃO DE NOME
-     ========================================================== */
-
-  function isValidName(name) {
-    if (!name) return false;
-
-    const value =
-      String(name).trim();
-
-    return value.length >= 2;
-  }
-
-  /* ==========================================================
-     14. VALIDAÇÃO DE SENHA
-     ========================================================== */
-
-  function isValidPassword(password) {
-    if (!password) return false;
-
-    return String(password).length >= 6;
-  }
-
-  /* ==========================================================
-     15. VALIDAÇÃO DO CADASTRO
-     ========================================================== */
-
-  function validateRegisterForm() {
-    const form =
-      getElement("#register-form");
-
-    if (!form) {
-      return false;
-    }
-
-    clearAllInputErrors(form);
-    clearFormMessage(form);
-
-    const nameInput =
-      getElement("#register-name");
-
-    const emailInput =
-      getElement("#register-email");
-
-    const passwordInput =
-      getElement("#register-password");
-
-    const confirmInput =
-      getElement("#register-password-confirm");
-
-    const acceptance =
-      getElement("#register-acceptance");
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
 
     let valid = true;
 
-    /* Nome */
 
-    if (
-      !nameInput ||
-      !isValidName(nameInput.value)
-    ) {
-      setInputError(
-        nameInput,
-        "Digite o seu nome."
-      );
+    if (!validateEmail(email)) {
+
+      loginEmailError.textContent =
+        "Introdu um e-mail válido.";
 
       valid = false;
+
     }
 
-    /* Email */
 
-    if (
-      !emailInput ||
-      !isValidEmail(emailInput.value)
-    ) {
-      setInputError(
-        emailInput,
-        "Digite um email válido."
-      );
+    if (!password) {
+
+      loginPasswordError.textContent =
+        "Introdu a tua palavra-passe.";
 
       valid = false;
+
     }
 
-    /* Senha */
 
-    if (
-      !passwordInput ||
-      !isValidPassword(
-        passwordInput.value
-      )
-    ) {
-      setInputError(
-        passwordInput,
-        "A senha deve ter pelo menos 6 caracteres."
-      );
+    if (!valid) {
 
-      valid = false;
-    }
-
-    /* Confirmação */
-
-    if (
-      !confirmInput ||
-      confirmInput.value !==
-        passwordInput?.value
-    ) {
-      setInputError(
-        confirmInput,
-        "As senhas não coincidem."
-      );
-
-      valid = false;
-    }
-
-    /* Aceitação */
-
-    if (
-      !acceptance ||
-      !acceptance.checked
-    ) {
-      showFormMessage(
-        form,
-        "É necessário aceitar os Termos e a Política de Privacidade.",
-        "error"
-      );
-
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  /* ==========================================================
-     FIM DA PARTE 1/4
-     ========================================================== */
- /* ============================================================
-   HOMEM E A MÁQUINA
-   GRUPO 1 — EXTERNA + CONTA + CONFIGURAÇÃO
-   app.js
-   PARTE 2/4
-   ============================================================ */
-
-  /* ==========================================================
-     16. VALIDAÇÃO DO LOGIN
-     ========================================================== */
-
-  function validateLoginForm() {
-    const form = getElement("#login-form");
-
-    if (!form) {
-      return false;
-    }
-
-    clearAllInputErrors(form);
-    clearFormMessage(form);
-
-    const emailInput =
-      getElement("#login-email");
-
-    const passwordInput =
-      getElement("#login-password");
-
-    let valid = true;
-
-    /* Email */
-
-    if (
-      !emailInput ||
-      !isValidEmail(emailInput.value)
-    ) {
-      setInputError(
-        emailInput,
-        "Digite um email válido."
-      );
-
-      valid = false;
-    }
-
-    /* Senha */
-
-    if (
-      !passwordInput ||
-      passwordInput.value.length === 0
-    ) {
-      setInputError(
-        passwordInput,
-        "Digite a sua senha."
-      );
-
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  /* ==========================================================
-     17. VALIDAÇÃO DA RECUPERAÇÃO DE SENHA
-     ========================================================== */
-
-  function validateResetForm() {
-    const form =
-      getElement("#reset-password-form");
-
-    if (!form) {
-      return false;
-    }
-
-    clearAllInputErrors(form);
-    clearFormMessage(form);
-
-    const emailInput =
-      getElement("#reset-email");
-
-    if (
-      !emailInput ||
-      !isValidEmail(emailInput.value)
-    ) {
-      setInputError(
-        emailInput,
-        "Digite um email válido."
-      );
-
-      return false;
-    }
-
-    return true;
-  }
-
-  /* ==========================================================
-     18. ESTADO DO BOTÃO DE CADASTRO
-     ========================================================== */
-
-  function updateRegisterButton() {
-    const form =
-      getElement("#register-form");
-
-    const button =
-      form?.querySelector(
-        'button[type="submit"]'
-      );
-
-    if (!button) return;
-
-    const nameInput =
-      getElement("#register-name");
-
-    const emailInput =
-      getElement("#register-email");
-
-    const passwordInput =
-      getElement("#register-password");
-
-    const confirmInput =
-      getElement("#register-password-confirm");
-
-    const acceptance =
-      getElement("#register-acceptance");
-
-    const basicFieldsFilled =
-      Boolean(
-        nameInput?.value.trim() &&
-        emailInput?.value.trim() &&
-        passwordInput?.value &&
-        confirmInput?.value
-      );
-
-    const passwordReady =
-      Boolean(
-        passwordInput &&
-        isValidPassword(
-          passwordInput.value
-        )
-      );
-
-    const passwordsMatch =
-      Boolean(
-        passwordInput &&
-        confirmInput &&
-        passwordInput.value ===
-          confirmInput.value
-      );
-
-    const accepted =
-      Boolean(
-        acceptance?.checked
-      );
-
-    button.disabled = !(
-      basicFieldsFilled &&
-      passwordReady &&
-      passwordsMatch &&
-      accepted
-    );
-  }
-
-  /* ==========================================================
-     19. EVENTOS DO CADASTRO
-     ========================================================== */
-
-  function setupRegisterForm() {
-    const form =
-      getElement("#register-form");
-
-    if (!form) return;
-
-    const inputs =
-      form.querySelectorAll("input");
-
-    inputs.forEach((input) => {
-      input.addEventListener(
-        "input",
-        () => {
-          clearInputError(input);
-          clearFormMessage(form);
-
-          updateRegisterButton();
-        }
-      );
-
-      input.addEventListener(
-        "change",
-        () => {
-          updateRegisterButton();
-        }
-      );
-    });
-
-    updateRegisterButton();
-
-    form.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
-
-        const valid =
-          validateRegisterForm();
-
-        updateRegisterButton();
-
-        if (!valid) {
-          return;
-        }
-
-        /*
-         * ATENÇÃO:
-         *
-         * O cadastro real ainda não está conectado.
-         * Não criamos conta falsa e não armazenamos
-         * senha no navegador.
-         */
-
-        showFormMessage(
-          form,
-          "O cadastro real será ativado quando o Firebase Authentication for conectado.",
-          "info"
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     20. EVENTOS DO LOGIN
-     ========================================================== */
-
-  function setupLoginForm() {
-    const form =
-      getElement("#login-form");
-
-    if (!form) return;
-
-    const inputs =
-      form.querySelectorAll("input");
-
-    inputs.forEach((input) => {
-      input.addEventListener(
-        "input",
-        () => {
-          clearInputError(input);
-          clearFormMessage(form);
-        }
-      );
-    });
-
-    form.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
-
-        const valid =
-          validateLoginForm();
-
-        if (!valid) {
-          return;
-        }
-
-        /*
-         * Ainda não existe autenticação real.
-         *
-         * Não devemos aceitar qualquer email/senha
-         * como se fossem credenciais válidas.
-         */
-
-        showFormMessage(
-          form,
-          "A autenticação ainda não está conectada. O Firebase será integrado na próxima etapa.",
-          "info"
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     21. EVENTOS DA RECUPERAÇÃO DE SENHA
-     ========================================================== */
-
-  function setupResetForm() {
-    const form =
-      getElement(
-        "#reset-password-form"
-      );
-
-    if (!form) return;
-
-    const inputs =
-      form.querySelectorAll("input");
-
-    inputs.forEach((input) => {
-      input.addEventListener(
-        "input",
-        () => {
-          clearInputError(input);
-          clearFormMessage(form);
-        }
-      );
-    });
-
-    form.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
-
-        const valid =
-          validateResetForm();
-
-        if (!valid) {
-          return;
-        }
-
-        /*
-         * O envio real do email de recuperação
-         * será feito pelo Firebase Authentication.
-         */
-
-        showFormMessage(
-          form,
-          "A recuperação de senha será ativada quando o Firebase Authentication for conectado.",
-          "info"
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     22. CAMPOS DO PERFIL
-     ========================================================== */
-
-  function setupProfileForm() {
-    const form =
-      getElement("#profile-form");
-
-    if (!form) return;
-
-    form.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
-
-        const nameInput =
-          getElement("#profile-name");
-
-        if (
-          nameInput &&
-          !isValidName(
-            nameInput.value
-          )
-        ) {
-          setInputError(
-            nameInput,
-            "Digite um nome válido."
-          );
-
-          return;
-        }
-
-        clearAllInputErrors(form);
-        clearFormMessage(form);
-
-        showFormMessage(
-          form,
-          "Alterações preparadas. A gravação real será ligada à conta Firebase.",
-          "info"
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     23. CONTROLES DE CONFIGURAÇÃO
-     ========================================================== */
-
-  function setupSettingControls() {
-    /*
-     * Radio buttons
-     */
-
-    const radios =
-      getElements(
-        'input[type="radio"][data-setting]'
-      );
-
-    radios.forEach((radio) => {
-      radio.addEventListener(
-        "change",
-        () => {
-          if (!radio.checked) return;
-
-          const setting =
-            radio.dataset.setting;
-
-          const value =
-            radio.value;
-
-          if (!setting) return;
-
-          if (
-            Object.prototype.hasOwnProperty.call(
-              temporaryState.settings,
-              setting
-            )
-          ) {
-            temporaryState.settings[
-              setting
-            ] = value;
-          }
-
-          showGlobalMessage(
-            "Alteração aplicada apenas nesta sessão.",
-            "info"
-          );
-        }
-      );
-    });
-
-    /*
-     * Checkboxes de configuração
-     */
-
-    const checkboxes =
-      getElements(
-        'input[type="checkbox"][data-setting]'
-      );
-
-    checkboxes.forEach(
-      (checkbox) => {
-        checkbox.addEventListener(
-          "change",
-          () => {
-            const setting =
-              checkbox.dataset.setting;
-
-            if (!setting) return;
-
-            if (
-              Object.prototype.hasOwnProperty.call(
-                temporaryState.settings,
-                setting
-              )
-            ) {
-              temporaryState.settings[
-                setting
-              ] = checkbox.checked;
-            }
-
-            showGlobalMessage(
-              "Alteração aplicada apenas nesta sessão.",
-              "info"
-            );
-          }
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     24. MENSAGEM GLOBAL
-     ========================================================== */
-
-  function showGlobalMessage(
-    message,
-    type = "info"
-  ) {
-    const messageElement =
-      getElement("#global-message");
-
-    if (!messageElement) {
+      validateLoginFields();
       return;
+
     }
 
-    messageElement.textContent =
-      message;
 
-    messageElement.classList.remove(
-      "is-error",
-      "is-success",
-      "is-info"
-    );
-
-    messageElement.classList.add(
-      `is-${type}`
-    );
-
-    messageElement.classList.add(
-      "is-visible"
-    );
-
-    window.clearTimeout(
-      showGlobalMessage.timeout
-    );
-
-    showGlobalMessage.timeout =
-      window.setTimeout(() => {
-        messageElement.classList.remove(
-          "is-visible"
-        );
-      }, 3500);
-  }
-
-  /* ==========================================================
-     25. LOGOUT TEMPORÁRIO
-     ========================================================== */
-
-  function handleTemporaryLogout() {
     /*
-     * Nesta fase não existe sessão Firebase.
+     * Firebase será ligado aqui posteriormente.
      *
-     * Apenas limpamos o estado temporário
-     * e voltamos para o login.
+     * Não simulamos login bem-sucedido.
+     * Não fingimos que a conta existe.
      */
 
-    temporaryState.currentUser =
-      null;
+    loginMessage.textContent =
+      "O acesso será ligado ao sistema de autenticação na próxima etapa.";
 
-    showGlobalMessage(
-      "Sessão de teste encerrada.",
-      "info"
-    );
+  });
 
-    goTo("login");
-  }
+}
 
-  /* ==========================================================
-     26. ESTADO INICIAL DOS CAMPOS
-     ========================================================== */
 
-  function initializeFormStates() {
-    const forms =
-      getElements("form");
+/* =========================================================
+   7. IR PARA CRIAR CONTA
+   ========================================================= */
 
-    forms.forEach((form) => {
-      clearFormMessage(form);
+const goRegister = document.getElementById("go-register");
 
-      const inputs =
-        form.querySelectorAll("input");
+if (goRegister) {
 
-      inputs.forEach((input) => {
-        clearInputError(input);
-      });
-    });
+  goRegister.addEventListener("click", () => {
 
-    updateRegisterButton();
-  }
+    showScreen("register");
 
-  /* ==========================================================
-     FIM DA PARTE 2/4
-     ========================================================== */
- /* ============================================================
-   HOMEM E A MÁQUINA
-   GRUPO 1 — EXTERNA + CONTA + CONFIGURAÇÃO
-   app.js
-   PARTE 3/4
-   ============================================================ */
+  });
 
-  /* ==========================================================
-     27. NAVEGAÇÃO DE VOLTA
-     ========================================================== */
+}
 
-  function setupBackButtons() {
-    const backButtons = getElements(
-      "[data-back]"
-    );
 
-    backButtons.forEach((button) => {
-      button.addEventListener(
-        "click",
-        (event) => {
-          event.preventDefault();
+/* =========================================================
+   8. RECUPERAR ACESSO
+   ========================================================= */
 
-          const destination =
-            button.dataset.back;
+const forgotPasswordLink =
+  document.getElementById("forgot-password-link");
 
-          if (!destination) {
-            return;
-          }
+const recoveryForm =
+  document.getElementById("recovery-form");
 
-          goTo(destination);
-        }
-      );
-    });
-  }
+const recoveryEmail =
+  document.getElementById("recovery-email");
 
-  /* ==========================================================
-     28. LIMPAR FORMULÁRIOS AO TROCAR DE TELA
-     ========================================================== */
+const recoverySubmit =
+  document.getElementById("recovery-submit");
 
-  function resetFormWhenLeavingScreen() {
-    const allForms =
-      getElements("form");
+const recoveryEmailError =
+  document.getElementById("recovery-email-error");
 
-    allForms.forEach((form) => {
-      form.addEventListener(
-        "reset",
-        () => {
-          clearAllInputErrors(form);
-          clearFormMessage(form);
+const recoveryMessage =
+  document.getElementById("recovery-message");
 
-          updateRegisterButton();
-        }
-      );
-    });
-  }
 
-  /* ==========================================================
-     29. VALIDAÇÃO EM TEMPO REAL
-     ========================================================== */
+function validateRecoveryFields() {
 
-  function setupLiveValidation() {
-    /*
-     * Email do login
-     */
+  if (!recoveryEmail || !recoverySubmit) return;
 
-    const loginEmail =
-      getElement("#login-email");
+  recoverySubmit.disabled =
+    !validateEmail(recoveryEmail.value);
 
-    if (loginEmail) {
-      loginEmail.addEventListener(
-        "blur",
-        () => {
-          if (
-            loginEmail.value.trim() === ""
-          ) {
-            return;
-          }
+}
 
-          if (
-            !isValidEmail(
-              loginEmail.value
-            )
-          ) {
-            setInputError(
-              loginEmail,
-              "Digite um email válido."
-            );
-          } else {
-            clearInputError(
-              loginEmail
-            );
-          }
-        }
-      );
-    }
 
-    /*
-     * Email do cadastro
-     */
+if (forgotPasswordLink) {
 
-    const registerEmail =
-      getElement("#register-email");
+  forgotPasswordLink.addEventListener("click", () => {
 
-    if (registerEmail) {
-      registerEmail.addEventListener(
-        "blur",
-        () => {
-          if (
-            registerEmail.value.trim() === ""
-          ) {
-            return;
-          }
+    showScreen("recovery");
 
-          if (
-            !isValidEmail(
-              registerEmail.value
-            )
-          ) {
-            setInputError(
-              registerEmail,
-              "Digite um email válido."
-            );
-          } else {
-            clearInputError(
-              registerEmail
-            );
-          }
-        }
-      );
-    }
+  });
 
-    /*
-     * Email de recuperação
-     */
+}
 
-    const resetEmail =
-      getElement("#reset-email");
 
-    if (resetEmail) {
-      resetEmail.addEventListener(
-        "blur",
-        () => {
-          if (
-            resetEmail.value.trim() === ""
-          ) {
-            return;
-          }
+if (recoveryEmail && recoverySubmit) {
 
-          if (
-            !isValidEmail(
-              resetEmail.value
-            )
-          ) {
-            setInputError(
-              resetEmail,
-              "Digite um email válido."
-            );
-          } else {
-            clearInputError(
-              resetEmail
-            );
-          }
-        }
-      );
-    }
+  recoveryEmail.addEventListener("input", () => {
 
-    /*
-     * Senha do cadastro
-     */
+    recoveryEmailError.textContent = "";
+    recoveryMessage.textContent = "";
 
-    const registerPassword =
-      getElement(
-        "#register-password"
-      );
+    validateRecoveryFields();
 
-    if (registerPassword) {
-      registerPassword.addEventListener(
-        "blur",
-        () => {
-          if (
-            registerPassword.value === ""
-          ) {
-            return;
-          }
+  });
 
-          if (
-            !isValidPassword(
-              registerPassword.value
-            )
-          ) {
-            setInputError(
-              registerPassword,
-              "A senha deve ter pelo menos 6 caracteres."
-            );
-          } else {
-            clearInputError(
-              registerPassword
-            );
-          }
-        }
-      );
-    }
+}
 
-    /*
-     * Confirmação da senha
-     */
 
-    const confirmPassword =
-      getElement(
-        "#register-password-confirm"
-      );
+if (recoveryForm) {
 
-    if (confirmPassword) {
-      confirmPassword.addEventListener(
-        "blur",
-        () => {
-          const password =
-            getElement(
-              "#register-password"
-            );
+  recoveryForm.addEventListener("submit", (event) => {
 
-          if (
-            confirmPassword.value === ""
-          ) {
-            return;
-          }
+    event.preventDefault();
 
-          if (
-            !password ||
-            confirmPassword.value !==
-              password.value
-          ) {
-            setInputError(
-              confirmPassword,
-              "As senhas não coincidem."
-            );
-          } else {
-            clearInputError(
-              confirmPassword
-            );
-          }
-        }
-      );
-    }
-  }
+    recoveryEmailError.textContent = "";
+    recoveryMessage.textContent = "";
 
-  /* ==========================================================
-     30. PROTEÇÃO DOS BOTÕES DESATIVADOS
-     ========================================================== */
+    const email = recoveryEmail.value.trim();
 
-  function setupDisabledButtonProtection() {
-    document.addEventListener(
-      "click",
-      (event) => {
-        const button =
-          event.target.closest(
-            "button"
-          );
 
-        if (!button) {
-          return;
-        }
+    if (!validateEmail(email)) {
 
-        if (button.disabled) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      },
-      true
-    );
-  }
+      recoveryEmailError.textContent =
+        "Introdu um e-mail válido.";
 
-  /* ==========================================================
-     31. ACESSIBILIDADE BÁSICA
-     ========================================================== */
-
-  function setupAccessibility() {
-    screens.forEach((screen) => {
-      if (
-        !screen.hasAttribute(
-          "aria-hidden"
-        )
-      ) {
-        screen.setAttribute(
-          "aria-hidden",
-          screen.classList.contains(
-            "is-active"
-          )
-            ? "false"
-            : "true"
-        );
-      }
-    });
-
-    /*
-     * Campos obrigatórios recebem aria-required.
-     */
-
-    const requiredInputs =
-      getElements(
-        "input[required]"
-      );
-
-    requiredInputs.forEach(
-      (input) => {
-        input.setAttribute(
-          "aria-required",
-          "true"
-        );
-      }
-    );
-  }
-
-  /* ==========================================================
-     32. ENTER NOS FORMULÁRIOS
-     ========================================================== */
-
-  function setupKeyboardBehavior() {
-    document.addEventListener(
-      "keydown",
-      (event) => {
-        if (event.key !== "Escape") {
-          return;
-        }
-
-        /*
-         * Não fechamos a aplicação nem fazemos
-         * logout com ESC.
-         *
-         * Apenas removemos mensagens temporárias.
-         */
-
-        const globalMessage =
-          getElement(
-            "#global-message"
-          );
-
-        if (globalMessage) {
-          globalMessage.classList.remove(
-            "is-visible"
-          );
-        }
-      }
-    );
-  }
-
-  /* ==========================================================
-     33. CONTROLO DO CHECKBOX DE TERMOS
-     ========================================================== */
-
-  function refreshTermsState() {
-    const checkbox =
-      getElement("#terms-checkbox");
-
-    const button =
-      getElement("#terms-continue");
-
-    if (!checkbox || !button) {
+      validateRecoveryFields();
       return;
+
     }
 
-    temporaryState.termsAccepted =
-      checkbox.checked;
-
-    button.disabled =
-      !checkbox.checked;
-  }
-
-  /* ==========================================================
-     34. CONTROLO DO CHECKBOX DE PRIVACIDADE
-     ========================================================== */
-
-  function refreshPrivacyState() {
-    const checkbox =
-      getElement(
-        "#privacy-checkbox"
-      );
-
-    const button =
-      getElement(
-        "#privacy-continue"
-      );
-
-    if (!checkbox || !button) {
-      return;
-    }
-
-    temporaryState.privacyAccepted =
-      checkbox.checked;
-
-    button.disabled =
-      !checkbox.checked;
-  }
-
-  /* ==========================================================
-     35. CONTROLO DA ACEITAÇÃO DO CADASTRO
-     ========================================================== */
-
-  function setupRegisterAcceptance() {
-    const checkbox =
-      getElement(
-        "#register-acceptance"
-      );
-
-    if (!checkbox) {
-      return;
-    }
-
-    checkbox.addEventListener(
-      "change",
-      () => {
-        updateRegisterButton();
-      }
-    );
-  }
-
-  /* ==========================================================
-     36. PREVENÇÃO DE DUPLO ENVIO
-     ========================================================== */
-
-  function setupSubmitProtection() {
-    const forms =
-      getElements("form");
-
-    forms.forEach((form) => {
-      form.addEventListener(
-        "submit",
-        () => {
-          const button =
-            form.querySelector(
-              'button[type="submit"]'
-            );
-
-          if (!button) {
-            return;
-          }
-
-          /*
-           * O botão será reativado pelo fluxo
-           * específico quando necessário.
-           *
-           * Como o Firebase ainda não está conectado,
-           * não mantemos o botão permanentemente
-           * bloqueado nesta fase.
-           */
-
-          window.setTimeout(() => {
-            if (
-              !button.dataset.permanentDisabled
-            ) {
-              button.disabled = false;
-            }
-
-            if (
-              form.id ===
-              "register-form"
-            ) {
-              updateRegisterButton();
-            }
-          }, 100);
-        }
-      );
-    });
-  }
-
-  /* ==========================================================
-     37. DETECÇÃO DE TELAS AUSENTES
-     ========================================================== */
-
-  function validateExpectedScreens() {
-    const expectedScreens = [
-      "splash",
-      "presentation",
-      "terms",
-      "privacy",
-      "login",
-      "register",
-      "reset-password",
-      "internal-home",
-      "settings",
-      "account",
-      "profile",
-      "settings-voice",
-      "settings-language",
-      "settings-conversation",
-      "settings-privacy",
-      "settings-appearance",
-      "privacy-document"
-    ];
-
-    const missingScreens =
-      expectedScreens.filter(
-        (id) => !findScreen(id)
-      );
-
-    if (missingScreens.length > 0) {
-      console.warn(
-        "[Grupo 1] Telas esperadas não encontradas:",
-        missingScreens
-      );
-    }
-
-    return missingScreens.length === 0;
-  }
-
-  /* ==========================================================
-     38. INICIALIZAÇÃO DOS ELEMENTOS
-     ========================================================== */
-
-  function initializeInterface() {
-    /*
-     * Garante que nenhuma tela fique ativa
-     * por acidente antes da inicialização.
-     */
-
-    screens.forEach((screen) => {
-      screen.classList.remove(
-        "is-active"
-      );
-
-      screen.setAttribute(
-        "aria-hidden",
-        "true"
-      );
-    });
 
     /*
-     * Splash é sempre a primeira tela
-     * quando a aplicação é aberta.
+     * Firebase Password Reset será ligado aqui.
+     *
+     * Não revelamos se o e-mail existe ou não.
      */
 
-    const splash =
-      findScreen("splash");
+    recoveryMessage.textContent =
+      "Se o e-mail estiver associado a uma conta, receberás as instruções de recuperação.";
 
-    if (splash) {
-      splash.classList.add(
-        "is-active"
-      );
+  });
 
-      splash.setAttribute(
-        "aria-hidden",
-        "false"
-      );
+}
 
-      currentScreenId =
-        "splash";
-    }
 
-    refreshTermsState();
-    refreshPrivacyState();
+/* =========================================================
+   9. VOLTAR PARA LOGIN
+   ========================================================= */
 
-    updateRegisterButton();
-  }
+const backToLogin =
+  document.getElementById("back-to-login");
 
-  /* ==========================================================
-     39. INICIALIZAÇÃO PRINCIPAL
-     ========================================================== */
+if (backToLogin) {
 
-  function initializeApp() {
-    /*
-     * Primeiro verificamos a estrutura.
-     */
+  backToLogin.addEventListener("click", () => {
 
-    validateExpectedScreens();
+    showScreen("login");
 
-    /*
-     * Depois preparamos a interface.
-     */
+  });
 
-    initializeInterface();
+}
 
-    /*
-     * Eventos de navegação.
-     */
 
-    setupActions();
+/* =========================================================
+   10. CADASTRO
+   ========================================================= */
 
-    setupBackButtons();
+const registerForm =
+  document.getElementById("register-form");
 
-    /*
-     * Autenticação / formulários.
-     */
+const registerName =
+  document.getElementById("register-name");
 
-    setupRegisterForm();
-    setupLoginForm();
-    setupResetForm();
-    setupProfileForm();
+const registerEmail =
+  document.getElementById("register-email");
 
-    /*
-     * Controles visuais.
-     */
+const registerPassword =
+  document.getElementById("register-password");
 
-    setupPasswordToggles();
-    setupSettingControls();
+const registerPasswordConfirm =
+  document.getElementById("register-password-confirm");
 
-    /*
-     * Termos e privacidade.
-     */
+const registerSubmit =
+  document.getElementById("register-submit");
 
-    setupTerms();
-    setupPrivacy();
-    setupRegisterAcceptance();
 
-    /*
-     * Validações.
-     */
+const registerNameError =
+  document.getElementById("register-name-error");
 
-    setupLiveValidation();
+const registerEmailError =
+  document.getElementById("register-email-error");
 
-    /*
-     * Comportamentos gerais.
-     */
+const registerPasswordError =
+  document.getElementById("register-password-error");
 
-    initializeFormStates();
-    resetFormWhenLeavingScreen();
-    setupDisabledButtonProtection();
-    setupAccessibility();
-    setupKeyboardBehavior();
-    setupSubmitProtection();
+const registerPasswordConfirmError =
+  document.getElementById("register-password-confirm-error");
 
-    /*
-     * Finalmente iniciamos o Splash.
-     */
+const registerMessage =
+  document.getElementById("register-message");
 
-    startSplash();
-  }
 
-  /* ==========================================================
-     40. INÍCIO
-     ========================================================== */
+function validateRegisterFields() {
 
   if (
-    document.readyState ===
-    "loading"
+    !registerName ||
+    !registerEmail ||
+    !registerPassword ||
+    !registerPasswordConfirm ||
+    !registerSubmit
   ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      initializeApp,
-      {
-        once: true
-      }
-    );
-  } else {
-    initializeApp();
+    return;
   }
 
-  /* ==========================================================
-     FIM DA PARTE 3/4
-     ========================================================== */
- /* ============================================================
-   HOMEM E A MÁQUINA
-   GRUPO 1 — EXTERNA + CONTA + CONFIGURAÇÃO
-   app.js
-   PARTE 4/4
-   ============================================================ */
 
-  /* ==========================================================
-     41. GARANTIA DE ESTADO DO SPLASH
-     ========================================================== */
+  const nameValid =
+    registerName.value.trim().length >= 2;
 
-  function ensureSplashState() {
-    const splash =
-      findScreen("splash");
+  const emailValid =
+    validateEmail(registerEmail.value);
 
-    if (!splash) {
-      return;
+  const passwordValid =
+    registerPassword.value.length >= 6;
+
+  const confirmationValid =
+    registerPasswordConfirm.value.length >= 6 &&
+    registerPassword.value ===
+    registerPasswordConfirm.value;
+
+
+  registerSubmit.disabled =
+    !(
+      nameValid &&
+      emailValid &&
+      passwordValid &&
+      confirmationValid
+    );
+
+}
+
+
+function clearRegisterErrors() {
+
+  registerNameError.textContent = "";
+  registerEmailError.textContent = "";
+  registerPasswordError.textContent = "";
+  registerPasswordConfirmError.textContent = "";
+  registerMessage.textContent = "";
+
+}
+
+
+[
+  registerName,
+  registerEmail,
+  registerPassword,
+  registerPasswordConfirm
+].forEach((field) => {
+
+  if (!field) return;
+
+  field.addEventListener("input", () => {
+
+    clearRegisterErrors();
+    validateRegisterFields();
+
+  });
+
+});
+
+
+if (registerForm) {
+
+  registerForm.addEventListener("submit", (event) => {
+
+    event.preventDefault();
+
+    clearRegisterErrors();
+
+    const name =
+      registerName.value.trim();
+
+    const email =
+      registerEmail.value.trim();
+
+    const password =
+      registerPassword.value;
+
+    const passwordConfirm =
+      registerPasswordConfirm.value;
+
+    let valid = true;
+
+
+    if (name.length < 2) {
+
+      registerNameError.textContent =
+        "Introdu o teu nome.";
+
+      valid = false;
+
     }
+
+
+    if (!validateEmail(email)) {
+
+      registerEmailError.textContent =
+        "Introdu um e-mail válido.";
+
+      valid = false;
+
+    }
+
+
+    if (password.length < 6) {
+
+      registerPasswordError.textContent =
+        "A palavra-passe deve ter pelo menos 6 caracteres.";
+
+      valid = false;
+
+    }
+
 
     if (
-      currentScreenId === "splash"
+      passwordConfirm.length < 6 ||
+      password !== passwordConfirm
     ) {
-      splash.classList.add(
-        "is-active"
-      );
 
-      splash.setAttribute(
-        "aria-hidden",
-        "false"
-      );
+      registerPasswordConfirmError.textContent =
+        "As palavras-passe não coincidem.";
+
+      valid = false;
+
     }
-  }
 
-  /* ==========================================================
-     42. ATUALIZAÇÃO DE DADOS VISUAIS DA CONTA
-     ========================================================== */
 
-  function updateAccountVisuals() {
-    const user =
-      temporaryState.currentUser;
+    if (!valid) {
 
-    if (!user) {
+      validateRegisterFields();
       return;
+
     }
 
-    const nameElements =
-      getElements(
-        "[data-user-name]"
-      );
 
-    nameElements.forEach(
-      (element) => {
-        element.textContent =
-          user.name || "";
-      }
-    );
-
-    const emailElements =
-      getElements(
-        "[data-user-email]"
-      );
-
-    emailElements.forEach(
-      (element) => {
-        element.textContent =
-          user.email || "";
-      }
-    );
-  }
-
-  /* ==========================================================
-     43. PREPARAÇÃO PARA AUTENTICAÇÃO REAL
-     ========================================================== */
-
-  function prepareAuthenticationLayer() {
     /*
-     * Ponto de integração reservado para Firebase
-     * Authentication.
-     *
      * IMPORTANTE:
-     * Não colocamos credenciais, senhas ou tokens aqui.
      *
-     * Quando o Firebase for conectado, esta camada deverá
-     * assumir:
+     * Não criamos uma conta falsa.
+     * Não guardamos palavra-passe no navegador.
      *
-     * - criação real da conta;
-     * - login real;
-     * - recuperação de senha;
-     * - sessão real;
-     * - logout real;
-     * - tratamento dos erros do Firebase;
-     * - proteção das áreas internas.
+     * A criação real da conta será feita pelo
+     * Firebase Authentication na próxima etapa.
      */
 
-    window.HomemEMaquinaAuth = {
-      connected: false,
+    registerMessage.textContent =
+      "O cadastro será ligado ao sistema de autenticação na próxima etapa.";
 
-      getUser() {
-        return temporaryState.currentUser;
-      },
+  });
 
-      isAuthenticated() {
-        return Boolean(
-          temporaryState.currentUser
-        );
-      }
-    };
-  }
+}
 
-  /* ==========================================================
-     44. PREPARAÇÃO PARA CONFIGURAÇÕES
-     ========================================================== */
 
-  function exposeTemporarySettings() {
-    /*
-     * Disponibiliza somente o estado temporário
-     * desta fase para módulos posteriores.
-     *
-     * Isto não é armazenamento permanente.
-     */
+/* =========================================================
+   11. VOLTAR DO CADASTRO PARA LOGIN
+   ========================================================= */
 
-    window.HomemEMaquinaSettings = {
-      get(setting) {
-        if (
-          !Object.prototype.hasOwnProperty.call(
-            temporaryState.settings,
-            setting
-          )
-        ) {
-          return null;
-        }
+const goLogin =
+  document.getElementById("go-login");
 
-        return temporaryState.settings[
-          setting
-        ];
-      },
+if (goLogin) {
 
-      set(setting, value) {
-        if (
-          !Object.prototype.hasOwnProperty.call(
-            temporaryState.settings,
-            setting
-          )
-        ) {
-          return false;
-        }
+  goLogin.addEventListener("click", () => {
 
-        temporaryState.settings[
-          setting
-        ] = value;
+    showScreen("login");
 
-        return true;
-      },
+  });
 
-      getAll() {
-        return {
-          ...temporaryState.settings
-        };
-      }
-    };
-  }
+}
 
-  /* ==========================================================
-     45. PREPARAÇÃO PARA INTEGRAÇÃO COM A MÁQUINA
-     ========================================================== */
 
-  function prepareMachineIntegration() {
-    /*
-     * O Grupo 1 não implementa a Máquina Principal.
-     *
-     * Apenas deixamos um ponto claro de integração
-     * para o Grupo 2.
-     *
-     * O Grupo 2 poderá assumir a tela interna sem que
-     * o Grupo 1 precise reconstruir toda a área externa.
-     */
+/* =========================================================
+   12. MOSTRAR / ESCONDER PALAVRA-PASSE
+   ========================================================= */
 
-    window.HomemEMaquinaNavigation = {
-      openMachine() {
-        /*
-         * Durante a fase atual, a tela interna ainda
-         * possui o placeholder da Máquina.
-         */
+const passwordToggles =
+  document.querySelectorAll(".password-toggle");
 
-        const machineScreen =
-          findScreen(
-            "internal-home"
-          );
 
-        if (!machineScreen) {
-          return false;
-        }
+passwordToggles.forEach((toggle) => {
 
-        goTo("internal-home");
+  toggle.addEventListener("click", () => {
 
-        return true;
-      },
+    const targetId =
+      toggle.getAttribute("data-password-target");
 
-      currentScreen() {
-        return currentScreenId;
-      },
+    if (!targetId) return;
 
-      goTo(screenId) {
-        return showScreen(
-          screenId
-        );
-      }
-    };
-  }
 
-  /* ==========================================================
-     46. TRATAMENTO DE ERROS GERAIS
-     ========================================================== */
+    const passwordInput =
+      document.getElementById(targetId);
 
-  function setupGlobalErrorHandling() {
-    window.addEventListener(
-      "error",
-      (event) => {
-        console.error(
-          "[Grupo 1] Erro de JavaScript:",
-          event.error || event.message
-        );
-      }
+    if (!passwordInput) return;
+
+
+    const showing =
+      passwordInput.type === "text";
+
+
+    passwordInput.type =
+      showing ? "password" : "text";
+
+
+    toggle.setAttribute(
+      "aria-pressed",
+      String(!showing)
     );
 
-    window.addEventListener(
-      "unhandledrejection",
-      (event) => {
-        console.error(
-          "[Grupo 1] Promise rejeitada:",
-          event.reason
-        );
-      }
+
+    toggle.setAttribute(
+      "aria-label",
+      showing
+        ? "Mostrar palavra-passe"
+        : "Esconder palavra-passe"
     );
+
+  });
+
+});
+
+
+/* =========================================================
+   13. TECLADO / ENTER
+   ========================================================= */
+
+document.addEventListener("keydown", (event) => {
+
+  if (event.key !== "Escape") return;
+
+  const loginVisible =
+    !screens.login.hidden;
+
+  const recoveryVisible =
+    !screens.recovery.hidden;
+
+  const registerVisible =
+    !screens.register.hidden;
+
+
+  if (recoveryVisible) {
+
+    showScreen("login");
+    return;
+
   }
 
-  /* ==========================================================
-     47. EXPOSIÇÃO CONTROLADA DO ESTADO
-     ========================================================== */
 
-  function exposeDebugState() {
-    /*
-     * Somente durante desenvolvimento.
-     *
-     * Não contém senha.
-     */
+  if (registerVisible) {
 
-    window.HomemEMaquinaDebug = {
-      getCurrentScreen() {
-        return currentScreenId;
-      },
+    showScreen("login");
+    return;
 
-      getTemporaryState() {
-        return {
-          termsAccepted:
-            temporaryState.termsAccepted,
-
-          privacyAccepted:
-            temporaryState.privacyAccepted,
-
-          currentUser:
-            temporaryState.currentUser
-              ? {
-                  name:
-                    temporaryState
-                      .currentUser.name,
-
-                  email:
-                    temporaryState
-                      .currentUser.email
-                }
-              : null,
-
-          settings: {
-            ...temporaryState.settings
-          }
-        };
-      }
-    };
   }
 
-  /* ==========================================================
-     48. FINALIZAÇÃO DA PREPARAÇÃO
-     ========================================================== */
 
-  function finalizeApplicationSetup() {
-    ensureSplashState();
+  if (loginVisible) {
 
-    prepareAuthenticationLayer();
+    return;
 
-    exposeTemporarySettings();
-
-    prepareMachineIntegration();
-
-    setupGlobalErrorHandling();
-
-    exposeDebugState();
-
-    updateAccountVisuals();
   }
 
-  /* ==========================================================
-     49. EXECUÇÃO FINAL
-     ========================================================== */
+});
+
+
+/* =========================================================
+   14. PROTEÇÃO BÁSICA
+   ========================================================= */
+
+window.addEventListener("pageshow", () => {
 
   /*
-   * O initializeApp() da Parte 3 é responsável por
-   * inicializar a interface.
-   *
-   * Este bloco aguarda o DOM para preparar as interfaces
-   * públicas e os pontos de integração.
+   * Mantemos o estado inicial controlado pelo app.
+   * A sessão persistente será adicionada com Firebase.
    */
 
-  function bootFinalLayer() {
-    finalizeApplicationSetup();
-  }
-
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      bootFinalLayer,
-      {
-        once: true
-      }
+  if (!screens.splash) {
+    console.error(
+      "Estrutura principal não encontrada."
     );
-  } else {
-    bootFinalLayer();
   }
 
-  /* ==========================================================
-     50. FIM DO APP.JS
-     ========================================================== */
+});
 
-})();
+
+/* =========================================================
+   FIM DO APP.JS
+   ========================================================= */
