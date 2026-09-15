@@ -3,12 +3,47 @@
 /* =========================================================
    HOMEM E A MÁQUINA — GRUPO 1 / OUVIU
    APP.JS
-   Navegação + Splash + Validações + Estados básicos
+   Firebase Authentication + Navegação + Validações
    ========================================================= */
 
 
 /* =========================================================
-   1. REFERÊNCIAS DAS TELAS
+   1. FIREBASE
+   ========================================================= */
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    updateProfile
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+
+var firebaseConfig = {
+    apiKey: "AIzaSyCgCX6KFFsXlwtBeO7dwjKvUOvuprSNVA0",
+    authDomain: "homem-maquina-ouviu.firebaseapp.com",
+    projectId: "homem-maquina-ouviu",
+    storageBucket: "homem-maquina-ouviu.firebasestorage.app",
+    messagingSenderId: "670735486971",
+    appId: "1:670735486971:web:09bf6bb62721bf972d855e"
+};
+
+
+var firebaseApp =
+    initializeApp(firebaseConfig);
+
+var auth =
+    getAuth(firebaseApp);
+
+
+/* =========================================================
+   2. REFERÊNCIAS DAS TELAS
    ========================================================= */
 
 var screens = {
@@ -22,7 +57,7 @@ var screens = {
 
 
 /* =========================================================
-   2. CONTROLO DE TELA
+   3. CONTROLO DE TELA
    ========================================================= */
 
 function showScreen(screenName) {
@@ -59,30 +94,88 @@ function showScreen(screenName) {
     targetScreen.hidden = false;
     targetScreen.setAttribute("aria-hidden", "false");
 
-    window.scrollTo(0, 0);
+    /*
+     * Só fazemos o scroll para o topo quando
+     * saímos do Splash.
+     *
+     * O Splash continua fixo.
+     */
+
+    if (screenName !== "splash") {
+        window.scrollTo(0, 0);
+    }
 }
 
 
 /* =========================================================
-   3. ESTADO INICIAL
+   4. ESTADO INICIAL
    ========================================================= */
 
 showScreen("splash");
 
 
 /* =========================================================
-   4. SPLASH
+   5. SPLASH + SESSÃO FIREBASE
    ========================================================= */
 
 var SPLASH_DURATION = 4000;
 
-window.setTimeout(function () {
+var splashFinished = false;
+var authResolved = false;
+var currentUser = null;
+
+
+function finishSplashIfReady() {
+
+    if (!splashFinished || !authResolved) {
+        return;
+    }
+
+    /*
+     * Se já existe uma sessão Firebase,
+     * entra diretamente na área interna.
+     */
+
+    if (currentUser) {
+        showScreen("internal");
+        return;
+    }
+
+    /*
+     * Sem sessão:
+     * entra na Área Externa.
+     */
+
     showScreen("terms");
+}
+
+
+window.setTimeout(function () {
+
+    splashFinished = true;
+
+    finishSplashIfReady();
+
 }, SPLASH_DURATION);
 
 
+/*
+ * O Firebase verifica automaticamente se existe
+ * uma sessão válida neste dispositivo.
+ */
+
+onAuthStateChanged(auth, function (user) {
+
+    currentUser = user;
+    authResolved = true;
+
+    finishSplashIfReady();
+
+});
+
+
 /* =========================================================
-   5. TERMOS E CONDIÇÕES
+   6. TERMOS E CONDIÇÕES
    ========================================================= */
 
 var termsAccept =
@@ -90,6 +183,7 @@ var termsAccept =
 
 var termsContinue =
     document.getElementById("terms-continue");
+
 
 if (termsAccept && termsContinue) {
 
@@ -100,20 +194,42 @@ if (termsAccept && termsContinue) {
 
     });
 
+
     termsContinue.addEventListener("click", function () {
 
         if (!termsAccept.checked) {
             return;
         }
 
+        /*
+         * Guardamos apenas o facto de os Termos
+         * terem sido aceites neste dispositivo.
+         *
+         * Isto NÃO substitui um registo jurídico
+         * definitivo no servidor.
+         */
+
+        try {
+            localStorage.setItem(
+                "hm_ouviu_terms_accepted",
+                "true"
+            );
+        } catch (error) {
+            console.warn(
+                "Não foi possível guardar a aceitação local.",
+                error
+            );
+        }
+
         showScreen("login");
 
     });
+
 }
 
 
 /* =========================================================
-   6. VALIDAÇÃO DE E-MAIL
+   7. VALIDAÇÃO DE E-MAIL
    ========================================================= */
 
 function validateEmail(email) {
@@ -128,7 +244,59 @@ function validateEmail(email) {
 
 
 /* =========================================================
-   7. LOGIN
+   8. ERROS DO FIREBASE
+   ========================================================= */
+
+function getFirebaseErrorMessage(error) {
+
+    if (!error || !error.code) {
+        return "Ocorreu um erro. Tenta novamente.";
+    }
+
+
+    switch (error.code) {
+
+        case "auth/invalid-email":
+            return "O e-mail introduzido não é válido.";
+
+        case "auth/user-not-found":
+            return "Não encontrámos uma conta com este e-mail.";
+
+        case "auth/wrong-password":
+        case "auth/invalid-credential":
+            return "O e-mail ou a palavra-passe estão incorretos.";
+
+        case "auth/invalid-login-credentials":
+            return "O e-mail ou a palavra-passe estão incorretos.";
+
+        case "auth/email-already-in-use":
+            return "Já existe uma conta com este e-mail.";
+
+        case "auth/weak-password":
+            return "A palavra-passe deve ter pelo menos 6 caracteres.";
+
+        case "auth/too-many-requests":
+            return "Foram feitas muitas tentativas. Tenta novamente mais tarde.";
+
+        case "auth/network-request-failed":
+            return "Não foi possível ligar ao serviço. Verifica a internet.";
+
+        case "auth/user-disabled":
+            return "Esta conta está desativada.";
+
+        default:
+            console.error(
+                "Erro Firebase:",
+                error
+            );
+
+            return "Não foi possível concluir a operação. Tenta novamente.";
+    }
+}
+
+
+/* =========================================================
+   9. LOGIN
    ========================================================= */
 
 var loginForm =
@@ -199,18 +367,20 @@ if (loginEmail &&
 
     });
 
+
     loginPassword.addEventListener("input", function () {
 
         clearLoginErrors();
         validateLoginFields();
 
     });
+
 }
 
 
 if (loginForm) {
 
-    loginForm.addEventListener("submit", function (event) {
+    loginForm.addEventListener("submit", async function (event) {
 
         event.preventDefault();
 
@@ -250,24 +420,48 @@ if (loginForm) {
         }
 
 
-        /*
-         * A autenticação real será ligada ao Firebase.
-         * Não simulamos uma entrada bem-sucedida.
-         */
+        loginSubmit.disabled = true;
 
         loginMessage.textContent =
-            "Não foi possível entrar. Verifica os teus dados.";
+            "A entrar...";
+
+
+        try {
+
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+            /*
+             * Não chamamos showScreen("internal")
+             * manualmente aqui.
+             *
+             * onAuthStateChanged trata da sessão.
+             */
+
+        } catch (error) {
+
+            loginMessage.textContent =
+                getFirebaseErrorMessage(error);
+
+            validateLoginFields();
+
+        }
 
     });
+
 }
 
 
 /* =========================================================
-   8. LOGIN → CADASTRO
+   10. LOGIN → CADASTRO
    ========================================================= */
 
 var goRegister =
     document.getElementById("go-register");
+
 
 if (goRegister) {
 
@@ -276,15 +470,17 @@ if (goRegister) {
         showScreen("register");
 
     });
+
 }
 
 
 /* =========================================================
-   9. LOGIN → RECUPERAÇÃO
+   11. LOGIN → RECUPERAÇÃO
    ========================================================= */
 
 var forgotPasswordLink =
     document.getElementById("forgot-password-link");
+
 
 if (forgotPasswordLink) {
 
@@ -293,11 +489,12 @@ if (forgotPasswordLink) {
         showScreen("recovery");
 
     });
+
 }
 
 
 /* =========================================================
-   10. RECUPERAÇÃO
+   12. RECUPERAÇÃO
    ========================================================= */
 
 var recoveryForm =
@@ -349,12 +546,13 @@ if (recoveryEmail &&
         validateRecoveryFields();
 
     });
+
 }
 
 
 if (recoveryForm) {
 
-    recoveryForm.addEventListener("submit", function (event) {
+    recoveryForm.addEventListener("submit", async function (event) {
 
         event.preventDefault();
 
@@ -363,34 +561,69 @@ if (recoveryForm) {
         var email =
             recoveryEmail.value.trim();
 
+
         if (!validateEmail(email)) {
 
             recoveryEmailError.textContent =
                 "Introdu um e-mail válido.";
 
             validateRecoveryFields();
+
             return;
         }
 
 
-        /*
-         * O envio real será ligado ao Firebase.
-         * Não revelamos se uma conta existe ou não.
-         */
+        recoverySubmit.disabled = true;
 
         recoveryMessage.textContent =
-            "Se o e-mail estiver associado a uma conta, receberás as instruções de recuperação.";
+            "A enviar...";
+
+
+        try {
+
+            await sendPasswordResetEmail(
+                auth,
+                email
+            );
+
+            /*
+             * Não revelamos ao utilizador se
+             * a conta realmente existe.
+             */
+
+            recoveryMessage.textContent =
+                "Se o e-mail estiver associado a uma conta, receberás as instruções de recuperação.";
+
+        } catch (error) {
+
+            /*
+             * Mantemos uma resposta genérica.
+             */
+
+            recoveryMessage.textContent =
+                "Se o e-mail estiver associado a uma conta, receberás as instruções de recuperação.";
+
+            console.warn(
+                "Recuperação:",
+                error
+            );
+
+        }
+
+        validateRecoveryFields();
 
     });
+
 }
 
 
 /* =========================================================
-   11. RECUPERAÇÃO → LOGIN
+   13. RECUPERAÇÃO → LOGIN
    ========================================================= */
 
 var backToLogin =
     document.getElementById("back-to-login");
+
 
 if (backToLogin) {
 
@@ -399,11 +632,12 @@ if (backToLogin) {
         showScreen("login");
 
     });
+
 }
 
 
 /* =========================================================
-   12. CADASTRO
+   14. CADASTRO
    ========================================================= */
 
 var registerForm =
@@ -450,6 +684,7 @@ function validateRegisterFields() {
         return;
     }
 
+
     var nameValid =
         registerName.value.trim().length >= 2;
 
@@ -463,6 +698,7 @@ function validateRegisterFields() {
         registerPasswordConfirm.value.length >= 6 &&
         registerPassword.value ===
         registerPasswordConfirm.value;
+
 
     registerSubmit.disabled =
         !(
@@ -505,6 +741,7 @@ var registerFields = [
     registerPasswordConfirm
 ];
 
+
 for (var r = 0; r < registerFields.length; r++) {
 
     if (!registerFields[r]) {
@@ -520,12 +757,13 @@ for (var r = 0; r < registerFields.length; r++) {
 
         }
     );
+
 }
 
 
 if (registerForm) {
 
-    registerForm.addEventListener("submit", function (event) {
+    registerForm.addEventListener("submit", async function (event) {
 
         event.preventDefault();
 
@@ -592,28 +830,68 @@ if (registerForm) {
         }
 
 
-        /*
-         * FASE ATUAL DE TESTE
-         *
-         * Firebase ainda não está ligado.
-         *
-         * Cadastro válido → Entrada interna.
-         *
-         * Não guardamos palavra-passe.
-         */
+        registerSubmit.disabled = true;
 
-        showScreen("internal");
+        registerMessage.textContent =
+            "A criar a tua conta...";
+
+
+        try {
+
+            var userCredential =
+                await createUserWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+
+            /*
+             * O nome não vai para uma base de dados nossa.
+             * É guardado no perfil básico do utilizador
+             * dentro do Firebase Authentication.
+             */
+
+            await updateProfile(
+                userCredential.user,
+                {
+                    displayName: name
+                }
+            );
+
+
+            registerMessage.textContent =
+                "Conta criada com sucesso.";
+
+            /*
+             * createUserWithEmailAndPassword já inicia
+             * a sessão automaticamente.
+             *
+             * onAuthStateChanged vai encaminhar
+             * o utilizador para a área interna.
+             */
+
+        } catch (error) {
+
+            registerMessage.textContent =
+                getFirebaseErrorMessage(error);
+
+            validateRegisterFields();
+
+        }
 
     });
+
 }
 
 
 /* =========================================================
-   13. CADASTRO → LOGIN
+   15. CADASTRO → LOGIN
    ========================================================= */
 
 var goLogin =
     document.getElementById("go-login");
+
 
 if (goLogin) {
 
@@ -622,15 +900,17 @@ if (goLogin) {
         showScreen("login");
 
     });
+
 }
 
 
 /* =========================================================
-   14. MOSTRAR / ESCONDER PALAVRA-PASSE
+   16. MOSTRAR / ESCONDER PALAVRA-PASSE
    ========================================================= */
 
 var passwordToggles =
     document.querySelectorAll(".password-toggle");
+
 
 for (var p = 0; p < passwordToggles.length; p++) {
 
@@ -645,29 +925,36 @@ for (var p = 0; p < passwordToggles.length; p++) {
                     "data-password-target"
                 );
 
+
             if (!targetId) {
                 return;
             }
 
+
             var passwordInput =
                 document.getElementById(targetId);
+
 
             if (!passwordInput) {
                 return;
             }
 
+
             var showing =
                 passwordInput.type === "text";
+
 
             passwordInput.type =
                 showing
                     ? "password"
                     : "text";
 
+
             toggle.setAttribute(
                 "aria-pressed",
                 String(!showing)
             );
+
 
             toggle.setAttribute(
                 "aria-label",
@@ -678,11 +965,12 @@ for (var p = 0; p < passwordToggles.length; p++) {
 
         }
     );
+
 }
 
 
 /* =========================================================
-   15. TECLA ESC
+   17. TECLA ESC
    ========================================================= */
 
 document.addEventListener("keydown", function (event) {
@@ -691,12 +979,14 @@ document.addEventListener("keydown", function (event) {
         return;
     }
 
+
     if (screens.recovery &&
         !screens.recovery.hidden) {
 
         showScreen("login");
         return;
     }
+
 
     if (screens.register &&
         !screens.register.hidden) {
@@ -709,7 +999,7 @@ document.addEventListener("keydown", function (event) {
 
 
 /* =========================================================
-   16. VERIFICAÇÃO DA ESTRUTURA
+   18. VERIFICAÇÃO DA ESTRUTURA
    ========================================================= */
 
 var requiredScreens = [
@@ -721,9 +1011,11 @@ var requiredScreens = [
     "internal"
 ];
 
+
 for (var s = 0; s < requiredScreens.length; s++) {
 
     var screenName = requiredScreens[s];
+
 
     if (!screens[screenName]) {
 
@@ -731,7 +1023,9 @@ for (var s = 0; s < requiredScreens.length; s++) {
             "Tela obrigatória não encontrada:",
             screenName
         );
+
     }
+
 }
 
 
