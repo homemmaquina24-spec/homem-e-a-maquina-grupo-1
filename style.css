@@ -1,12 +1,7 @@
 /* =========================================================
    HOMEM E A MÁQUINA — GRUPO 1 / OUVIU
    ÁREA EXTERNA
-   CSS — VERSÃO AJUSTADA
-   ========================================================= */
-
-
-/* =========================================================
-   01. BASE
+   CSS — BASE ALINHADA AO HTML
    ========================================================= */
 
 * {
@@ -42,11 +37,6 @@ a {
     text-decoration: none;
 }
 
-
-/* =========================================================
-   02. CONTROLO DAS TELAS
-   ========================================================= */
-
 [hidden] {
     display: none !important;
 }
@@ -59,7 +49,7 @@ a {
 
 
 /* =========================================================
-   03. SPLASH
+   SPLASH
    ========================================================= */
 
 .screen-splash {
@@ -79,58 +69,72 @@ a {
 
 .splash-content {
     width: 100%;
+    padding: 24px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px;
 }
 
-.splash-logo {
+
+/* =========================================================
+   HM — LOGO
+   ========================================================= */
+
+.hm-logo,
+.hm-mark {
     position: relative;
-    width: 118px;
-    height: 118px;
-    margin-bottom: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.splash-logo::before {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(
-        circle,
-        rgba(105, 153, 255, 0.20),
-        rgba(105, 153, 255, 0.03) 60%,
-        transparent 75%
-    );
-    animation: splashAura 3s ease-in-out infinite;
+.hm-logo {
+    width: 118px;
+    height: 118px;
+    margin-bottom: 26px;
 }
 
-.logo-h,
-.logo-m {
+.hm-logo::before,
+.hm-mark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            circle,
+            rgba(105, 153, 255, 0.18),
+            rgba(105, 153, 255, 0.03) 60%,
+            transparent 75%
+        );
+}
+
+.hm-logo::before {
+    animation: machineAura 3s ease-in-out infinite;
+}
+
+.hm-letter {
     position: absolute;
     font-weight: 700;
     line-height: 1;
     z-index: 2;
 }
 
-.logo-h {
+.hm-logo .hm-letter {
     font-size: 62px;
+}
+
+.hm-logo .hm-h {
     transform: translate(-16px, -4px);
 }
 
-.logo-m {
-    font-size: 62px;
+.hm-logo .hm-m {
     transform: translate(17px, 7px);
 }
 
-.logo-core {
+.hm-core {
     position: absolute;
     width: 20px;
     height: 20px;
@@ -146,7 +150,7 @@ a {
     font-size: 22px;
     font-weight: 600;
     letter-spacing: 0.4px;
-    margin-bottom: 10px;
+    margin-bottom: 9px;
 }
 
 .splash-concept {
@@ -156,29 +160,65 @@ a {
     max-width: 280px;
 }
 
+
+/* =========================================================
+   INDICADOR DA MÁQUINA NO SPLASH
+   ========================================================= */
+
 .splash-loader {
-    width: 54px;
-    height: 2px;
-    margin-top: 32px;
+    width: 38px;
+    height: 38px;
+    margin-top: 29px;
     position: relative;
-    overflow: hidden;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.splash-loader::after {
-    content: "";
+.loader-ring {
     position: absolute;
-    left: -100%;
-    top: 0;
-    width: 70%;
-    height: 100%;
-    border-radius: inherit;
-    background: rgba(255, 255, 255, 0.72);
-    animation: splashLoader 1.7s ease-in-out infinite;
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.10);
+    border-top-color: rgba(255, 255, 255, 0.78);
+    border-right-color: rgba(106, 159, 255, 0.60);
+    border-radius: 50%;
+    animation: machineRotate 1.7s linear infinite;
 }
 
-@keyframes splashAura {
+.loader-core {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 0 12px rgba(106, 159, 255, 0.65);
+    animation: machinePulse 1.7s ease-in-out infinite;
+}
+
+@keyframes machineRotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes machinePulse {
+    0%,
+    100% {
+        transform: scale(0.75);
+        opacity: 0.65;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
+@keyframes machineAura {
     0%,
     100% {
         transform: scale(0.96);
@@ -191,118 +231,117 @@ a {
     }
 }
 
-@keyframes splashLoader {
-    0% {
-        left: -100%;
-    }
-
-    50% {
-        left: 40%;
-    }
-
-    100% {
-        left: 110%;
-    }
-}
-
 
 /* =========================================================
-   04. TERMOS + PRIVACIDADE
+   HM PEQUENO — TELAS INTERNAS
    ========================================================= */
 
-.screen-terms {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 0 22px;
-    overflow: hidden;
-}
-
-.terms-header {
-    flex: 0 0 auto;
-    padding-top: 28px;
-    padding-bottom: 18px;
-    text-align: center;
-}
-
-.terms-header .small-logo {
-    margin-bottom: 14px;
-}
-
-.terms-header h1 {
-    font-size: 21px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-}
-
-.small-logo {
+.hm-mark {
     width: 58px;
     height: 58px;
     margin-left: auto;
     margin-right: auto;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.small-logo .logo-h,
-.small-logo .logo-m {
+.hm-mark .hm-letter {
     font-size: 31px;
 }
 
-.small-logo .logo-h {
+.hm-mark .hm-h {
     transform: translate(-9px, -2px);
 }
 
-.small-logo .logo-m {
+.hm-mark .hm-m {
     transform: translate(9px, 4px);
 }
 
-.small-logo .logo-core {
+.hm-mark .hm-core {
     width: 9px;
     height: 9px;
 }
 
-.terms-content {
+
+/* =========================================================
+   TERMOS E CONDIÇÕES
+   ========================================================= */
+
+.screen-terms {
+    min-height: 100vh;
+    padding: 0 20px;
+    overflow: hidden;
+}
+
+.terms-layout {
+    width: 100%;
+    max-width: 520px;
+    min-height: 100vh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen-header {
+    flex: 0 0 auto;
+    text-align: center;
+    padding-top: 22px;
+    padding-bottom: 13px;
+}
+
+.screen-heading h1 {
+    margin-top: 12px;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.terms-scroll {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 4px 2px 8px;
+    padding: 5px 3px 8px;
 }
 
-.terms-content h2 {
+.legal-section {
+    margin-bottom: 18px;
+}
+
+.legal-section:last-child {
+    margin-bottom: 4px;
+}
+
+.legal-section h2 {
     font-size: 14px;
+    line-height: 1.3;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
 }
 
-.terms-content p {
+.legal-section p {
     font-size: 10.5px;
-    line-height: 1.52;
-    opacity: 0.66;
-    margin-bottom: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.64);
+    margin-bottom: 9px;
 }
 
 .terms-actions {
     flex: 0 0 auto;
-    padding-top: 15px;
-    padding-bottom: 18px;
+    padding-top: 10px;
+    padding-bottom: 16px;
 }
 
-.terms-checkbox {
+.checkbox-row {
     position: relative;
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    min-height: 28px;
+    min-height: 26px;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
 
-.terms-checkbox input {
+.checkbox-row input {
     position: absolute;
     opacity: 0;
     pointer-events: none;
@@ -319,12 +358,12 @@ a {
     position: relative;
 }
 
-.terms-checkbox input:checked + .custom-checkbox {
-    border-color: rgba(255, 255, 255, 0.85);
-    background: rgba(255, 255, 255, 0.92);
+.checkbox-row input:checked + .custom-checkbox {
+    background: rgba(255, 255, 255, 0.94);
+    border-color: rgba(255, 255, 255, 0.94);
 }
 
-.terms-checkbox input:checked + .custom-checkbox::after {
+.checkbox-row input:checked + .custom-checkbox::after {
     content: "";
     position: absolute;
     left: 6px;
@@ -336,47 +375,43 @@ a {
     transform: rotate(45deg);
 }
 
-.checkbox-text {
+.checkbox-label {
     flex: 1;
     font-size: 12px;
     line-height: 1.45;
-    opacity: 0.82;
+    color: rgba(255, 255, 255, 0.76);
     padding-top: 1px;
 }
 
 
 /* =========================================================
-   05. BOTÕES
+   BOTÕES
    ========================================================= */
 
 .primary-button,
 .secondary-button {
+    width: 100%;
+    min-height: 52px;
+    padding: 11px 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    min-height: 54px;
-    padding: 11px 18px;
-    border-radius: 12px;
+    border-radius: 11px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.1px;
-    transition:
-        opacity 0.2s ease,
-        transform 0.2s ease,
-        background 0.2s ease;
     -webkit-tap-highlight-color: transparent;
 }
 
 .primary-button {
-    margin-top: 18px;
+    margin-top: 15px;
     color: #020611;
     background: rgba(255, 255, 255, 0.94);
 }
 
 .secondary-button {
-    margin-top: 12px;
+    margin-top: 11px;
     color: rgba(255, 255, 255, 0.88);
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -393,8 +428,8 @@ a {
 }
 
 .text-button {
-    min-height: 36px;
-    padding: 4px 0;
+    min-height: 34px;
+    padding: 3px 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -407,95 +442,101 @@ a {
 
 
 /* =========================================================
-   06. AUTENTICAÇÃO — LOGIN / CADASTRO
+   LOGIN / CADASTRO / RECUPERAÇÃO
    ========================================================= */
 
 .screen-auth {
     min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    padding: 0 20px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 22px;
 }
 
 .auth-container {
     width: 100%;
-    max-width: 430px;
-    margin: auto;
-    padding: 30px 0;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 25px 0 24px;
 }
 
 .auth-header {
     text-align: center;
-    margin-bottom: 34px;
+    margin-bottom: 27px;
 }
 
-.auth-header .small-logo {
-    margin-bottom: 16px;
+.auth-header .hm-mark {
+    margin-bottom: 12px;
 }
 
 .auth-header h1 {
     font-size: 22px;
     font-weight: 600;
-    margin-bottom: 8px;
+    line-height: 1.25;
 }
 
 .auth-header p {
+    margin-top: 7px;
     font-size: 12px;
-    line-height: 1.5;
-    opacity: 0.55;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.52);
 }
 
-.form-field {
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.field-group {
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 21px;
 }
 
-.form-field label {
+.field-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
     font-size: 13px;
     line-height: 1.3;
     color: rgba(255, 255, 255, 0.76);
 }
 
-.form-field input {
+.field-group input {
     width: 100%;
-    min-height: 54px;
-    padding: 0 16px;
+    height: 52px;
+    padding: 0 15px;
     border: 1px solid rgba(255, 255, 255, 0.13);
-    border-radius: 12px;
+    border-radius: 11px;
     outline: none;
     color: #ffffff;
     background: rgba(255, 255, 255, 0.045);
     font-size: 16px;
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease;
 }
 
-.form-field input:focus {
+.field-group input:focus {
     border-color: rgba(255, 255, 255, 0.42);
     background: rgba(255, 255, 255, 0.065);
 }
 
-.form-field input::placeholder {
+.field-group input::placeholder {
     color: rgba(255, 255, 255, 0.30);
 }
 
-.password-wrapper {
+
+/* =========================================================
+   PALAVRA-PASSE
+   ========================================================= */
+
+.password-field {
     position: relative;
+    width: 100%;
 }
 
-.password-wrapper input {
-    padding-right: 54px;
+.password-field input {
+    padding-right: 52px;
 }
 
 .password-toggle {
     position: absolute;
-    right: 7px;
+    right: 6px;
     top: 50%;
     width: 40px;
     height: 40px;
@@ -504,7 +545,6 @@ a {
     align-items: center;
     justify-content: center;
     border-radius: 9px;
-    color: rgba(255, 255, 255, 0.60);
     background: transparent;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -514,11 +554,73 @@ a {
     background: rgba(255, 255, 255, 0.06);
 }
 
-#forgot-password-link {
+
+/* Olho */
+
+.password-icon {
+    position: relative;
+    display: block;
+    width: 19px;
+    height: 12px;
+    border: 1.6px solid rgba(255, 255, 255, 0.68);
+    border-radius: 75% 15%;
+    transform: rotate(45deg);
+}
+
+.password-icon::after {
+    content: "";
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    left: 5px;
+    top: 2px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.68);
+}
+
+.password-toggle[aria-pressed="true"] .password-icon::before {
+    content: "";
+    position: absolute;
+    width: 23px;
+    height: 1.5px;
+    left: -3px;
+    top: 5px;
+    background: rgba(255, 255, 255, 0.68);
+    transform: rotate(-45deg);
+}
+
+
+/* =========================================================
+   ERROS / MENSAGENS
+   ========================================================= */
+
+.field-error {
+    min-height: 0;
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: rgba(255, 170, 170, 0.90);
+}
+
+.form-message {
+    min-height: 0;
+    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.60);
+}
+
+
+/* =========================================================
+   LOGIN
+   ========================================================= */
+
+.forgot-button {
     width: 100%;
-    margin-top: -2px;
-    margin-bottom: 20px;
     justify-content: flex-end;
+    margin-top: -4px;
+    margin-bottom: 4px;
 }
 
 .auth-switch {
@@ -527,7 +629,7 @@ a {
     justify-content: center;
     flex-wrap: wrap;
     gap: 5px;
-    margin-top: 26px;
+    margin-top: 22px;
     font-size: 13px;
     line-height: 1.5;
     color: rgba(255, 255, 255, 0.52);
@@ -535,28 +637,12 @@ a {
 
 .auth-switch button {
     color: rgba(255, 255, 255, 0.88);
-    background: transparent;
-    cursor: pointer;
-    font-size: 13px;
     font-weight: 600;
 }
 
 
 /* =========================================================
-   07. RECUPERAÇÃO
-   ========================================================= */
-
-.recovery-message {
-    margin-top: 16px;
-    font-size: 12px;
-    line-height: 1.55;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.58);
-}
-
-
-/* =========================================================
-   08. ÁREA INTERNA — ENTRADA
+   ENTRADA INTERNA
    ========================================================= */
 
 .screen-internal-entry {
@@ -573,25 +659,18 @@ a {
     max-width: 380px;
 }
 
-.internal-entry-content .small-logo {
-    margin-bottom: 24px;
+.internal-entry-content .hm-mark {
+    margin-bottom: 20px;
 }
 
 .internal-entry-content h1 {
     font-size: 22px;
     font-weight: 600;
-    margin-bottom: 10px;
-}
-
-.internal-entry-content p {
-    font-size: 13px;
-    line-height: 1.6;
-    opacity: 0.58;
 }
 
 
 /* =========================================================
-   09. RESPONSIVIDADE — ECRÃS PEQUENOS
+   ECRÃS PEQUENOS
    ========================================================= */
 
 @media (max-width: 380px) {
@@ -602,44 +681,43 @@ a {
         padding-right: 18px;
     }
 
-    .terms-header {
-        padding-top: 22px;
-        padding-bottom: 16px;
+    .screen-header {
+        padding-top: 18px;
+        padding-bottom: 10px;
+    }
+
+    .screen-heading h1 {
+        font-size: 21px;
+    }
+
+    .legal-section p {
+        font-size: 10px;
+        line-height: 1.48;
     }
 
     .terms-actions {
-        padding-top: 14px;
-        padding-bottom: 15px;
+        padding-bottom: 13px;
     }
 
     .auth-container {
-        padding-top: 20px;
-        padding-bottom: 20px;
+        padding-top: 18px;
+        padding-bottom: 18px;
     }
 
     .auth-header {
-        margin-bottom: 28px;
+        margin-bottom: 24px;
     }
 
-    .form-field {
-        margin-bottom: 18px;
+    .field-group {
+        margin-bottom: 19px;
     }
 
-    .form-field input {
-        min-height: 52px;
+    .field-group input {
+        height: 51px;
     }
 
     .primary-button,
     .secondary-button {
-        min-height: 52px;
-    }
-
-    .checkbox-text {
-        font-size: 12px;
-    }
-
-    .terms-content p {
-        font-size: 10px;
-        line-height: 1.5;
+        min-height: 51px;
     }
    }
